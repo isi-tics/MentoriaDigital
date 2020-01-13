@@ -1,0 +1,441 @@
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Avança +">
+    <meta name="author" content="ISITICs">
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+    <title>Avança +</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/graph.style.css">
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link href="assets/css/mdb.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app" class="container-fluid">
+        <div class="row div-logo-interna">
+            <div class="col-12 text-center">
+                <a href="index.html">
+                    <img id="logo-interna" src="assets/img/logo.png" class="img-fluid" alt="Logo">
+                </a>
+            </div>
+        </div>
+        <div class="row div-header-rodada">
+            <div class="col-12 text-center">
+                <h2>RODADA <span class="setRound"></span></h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 text-center">
+                <br />
+                <h4>OEE: <span id="setRoundOEE"></span></h4>
+                <br />
+                <div class="wrapper" style="overflow-x: scroll; overflow-y: hidden; white-space: nowrap;">
+                    <div style="height: 390px">
+                        <canvas id="myChart" style="left: 0;right:0;"></canvas>
+                    </div>
+                </div>
+                <h3>Qualidade</h3>
+                <canvas id="pieChart"></canvas>
+                <br />
+                <h3>Disponibilidade</h3>
+                <canvas id="pieChartAvailability"></canvas>
+                <br />
+                <h3>Performance</h3>
+                <canvas id="pieChartPerformance"></canvas>
+                <br />
+                <p class="information-mobile"></p>
+                <div class="table-responsive-xs">
+                    <caption>Incidências de paradas e tempo de duração</caption>
+                    <table id="occurenceStop" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Motivo da Parada</th>
+                                <th>Tempo Parado (min)</th>
+                                <th>Incidências</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-responsive-xs">
+                    <caption>% acumulada de Paradas</caption>
+                    <table id="percentStop" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Motivo da Parada</th>
+                                <th>Tempo de Parada (min)</th>
+                                <th>Acumulada</th>
+                                <th>% Acumulada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <h5>Custo total (SENAI Coin): $<span id="totalCost"></span></h5>
+                <h5>Quantidade produzida: <span id="producedQty"></span></h5>
+                <h5>Tempo de produção: <span id="duration"></span>h</h5>
+                <h5>Custo por peça: <span id="setRoundCostPerItem"></span></h5>
+                <h5 id="setRoundExtraHours">Horas extras: <span></span>h</h5>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-12 text-center">
+                <a @click.prevent="generateMailBody()" class="btn btn-primary my-2">Enviar por E-mail</a>
+            </div>
+            <div class="col-12 text-center">
+                <a onclick="deleteRound()" class="btn btn-danger my-2">Apagar Dados da Rodada</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="assets/js/popper.min.js"></script>
+    <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/js/mdb.min.js"></script>
+    <script type="text/javascript" src="assets/js/chart.min.js"></script>
+    <script type="text/javascript" src="assets/js/chartjs-plugin-datalabels.min.js"></script>
+
+    <script type="text/javascript" src="assets/js/vue.min.js"></script>
+    <script type="text/javascript" src="assets/js/adapter.min.js"></script>
+    <script type="text/javascript" src="assets/js/app.js"></script>
+
+    <script>
+        var roundToSet = ""
+        window.onload = function () {
+            this.roundToSet = localStorage.getItem('pastRound') == undefined ? localStorage.getItem('currentRound') : localStorage.getItem('pastRound');
+            //é necessário saber se a rodada escolhida é uma rodada que já foi finalizada antes ou a rodada atual, para que os dados sejam mostrados de acordo com a rodada a qual foram calculados
+            //sabendo qual é a rodada, exibir na página os dados salvos em localStorage já calculados na tela anterior
+            $('.setRound').html(this.roundToSet);
+            $('#setRoundOEE').html(localStorage.getItem('oeeRound' + this.roundToSet));
+            $('#setRoundCostPerItem').html(localStorage.getItem('costsPerItemRound' + this.roundToSet));
+            $('#producedQty').html(localStorage.getItem('producedQtyRound' + this.roundToSet));
+            $('#totalCost').html(localStorage.getItem('totalCostRound' + this.roundToSet));
+            $('#duration').html(localStorage.getItem('durationRound' + this.roundToSet));
+            const extraHours = localStorage.getItem('extraHoursRound' + this.roundToSet);
+            if (extraHours != undefined) {
+                $('#setRoundExtraHours').css('display', 'block');
+                $('#setRoundExtraHours span').html(extraHours);
+            } else {
+                $('#setRoundExtraHours').css('display', 'none');
+            }
+
+            var reasonCodes = JSON.parse(localStorage.getItem('reasonCodesRound' + this.roundToSet));
+            var totalTimeStopped = 0;
+            var counter = 0;
+            var auxReasonCodeTimeStopped = [];
+            for (var key in reasonCodes) {
+                if (reasonCodes.hasOwnProperty(key)) {
+                    $("#occurenceStop tbody").append(`<tr id="${counter}"></tr>`);
+                    $("#percentStop tbody").append(`<tr id="${counter}"></tr>`);
+                    var $reasonStop = $(`<td>${key}</td>`);
+                    var $qtdOccurences = $(`<td>${reasonCodes[key].occurences}</td>`);
+                    var $timeStopped = $(`<td>${reasonCodes[key].timeStopped}</td>`);
+                    totalTimeStopped += parseFloat(reasonCodes[key].timeStopped);
+                    auxReasonCodeTimeStopped.push({ key: key, timeStopped: parseFloat(reasonCodes[key].timeStopped) });
+                    $(`#occurenceStop tbody tr#${counter}`).append($reasonStop, [$timeStopped, $qtdOccurences]);
+                    $(`#percentStop tbody tr#${counter}`).append($reasonStop.clone(), [$timeStopped.clone(), $(`<td id="percentStop${key.replace(/\s+/g, '')}Accumulated"></td>`), $(`<td id="percentStop${key.replace(/\s+/g, '')}Percent"></td>`)]);
+                    counter++;
+                }
+            }
+
+            $(".table-responsive-xs, .wrapper").css('display', auxReasonCodeTimeStopped == [] ? 'none' : 'block');
+
+            //variáveis auxiliares para preencher o gráfico e a tabela
+            var percentAccumulated = 0;
+            var datasetPercentAccumulated = [];
+            var labels = [];
+            var datasetBar = [];
+            //varrendo array auxiliar para calcular e mostrar na tabela porcentagem acumulada
+            for (var i = 0; i < auxReasonCodeTimeStopped.length; i++) {
+                var current = auxReasonCodeTimeStopped[i];
+                const accumulated = parseFloat((100 * (current.timeStopped / totalTimeStopped)));
+                if (i == 0) percentAccumulated = accumulated;
+                else percentAccumulated = percentAccumulated + accumulated;
+                datasetPercentAccumulated.push(Math.round(percentAccumulated));
+
+                $(`#percentStop${current.key.replace(/\s+/g, '')}Accumulated`).html((accumulated > 0 ? accumulated.toFixed(2) : "0") + "%");
+                $(`#percentStop${current.key.replace(/\s+/g, '')}Percent`).html((percentAccumulated > 0 ? percentAccumulated.toFixed(2) : "0") + "%");
+
+                labels.push(current.key);
+                datasetBar.push(current.timeStopped);
+            }
+
+            var ctx = document.getElementById("myChart").getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tempo de parada',
+                        data: datasetBar,
+                        yAxisID: 'duration',
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255,99,102,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1,
+                        datalabels: {
+                            formatter: function (value, context) {
+                                const ret = value > -1 ? value : 0;
+                                return ret + "min";
+                            }
+                        }
+                    }, {
+                        type: 'line',
+                        label: '% acumulada',
+                        yAxisID: 'accumulated',
+                        data: datasetPercentAccumulated,
+                        borderColor: [
+                            'rgba(143, 7, 62,1)'
+                        ],
+                        fill: false,
+                        datalabels: {
+                            anchor: 'start',
+                            align: 'top',
+                            formatter: function (value, context) {
+                                const ret = parseInt(value) > -1 ? value : 0;
+                                return ret + "%";
+                            }
+                        }
+                    }]
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: 'Pareto das Paradas',
+                        fontSize: 18
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            id: 'duration',
+                            position: 'left',
+                            type: 'linear',
+                            ticks: {
+                                beginAtZero: true,
+                                min: 0
+                            },
+                            gridLines: {
+                                display: false
+                            }
+                        }, {
+                            id: 'accumulated',
+                            ticks: {
+                                beginAtZero: true,
+                                min: 0,
+                                max: 125,
+                                stepSize: 25,
+                                callback: function (label, index, labels) {
+                                    var l = label != 125 ? label + '%' : "";
+                                    return l;
+                                }
+                            },
+                            type: 'linear',
+                            position: 'right'
+                        }],
+                        xAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                min: 0,
+                                suggestedMin: 0,
+                                maxRotation: 90,
+                                minRotation: 75,
+                                fontSize: 12
+                            }
+                        }]
+                    }
+                }
+            });
+
+            var quality = parseFloat(localStorage.getItem('qualityRound' + this.roundToSet)).toFixed(2);
+            var availability = parseFloat(localStorage.getItem('availabilityRound' + this.roundToSet));
+            var performance = parseFloat(localStorage.getItem('performanceRound' + this.roundToSet)).toFixed(2);
+            //pie
+            var ctxP = document.getElementById("pieChart").getContext('2d');
+            var myPieChart = new Chart(ctxP, {
+                type: 'pie',
+                data: {
+                    labels: ["Peças boas", "Peças ruins"],
+                    datasets: [{
+                        data: [100 * quality, 100 - (100 * quality)],
+                        backgroundColor: ["#F7464A", "#FA9B9E", "#FDB45C", "#949FB1", "#4D5360"],
+                        hoverBackgroundColor: ["#FF5A5E", "#ffcdcf", "#FFC870", "#A8B3C5", "#616774"],
+                        borderColor: ['#bd0022', '#bd0022'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                var label = data.labels[tooltipItem.index] || '';
+
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += Math.round(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]) + '%';
+                                return label;
+                            }
+                        }
+                    },
+                    plugins: {
+                        datalabels: {
+                            color: "#000",
+                            formatter: function (value, context) {
+                                return Math.round(value) + "%";
+                            },
+                            align: 'bottom',
+                            anchor: 'bottom'
+                        }
+                    }
+                }
+            });
+            var ctxPieAvblt = document.getElementById("pieChartAvailability").getContext('2d');
+            var myPieChartAvailability = new Chart(ctxPieAvblt, {
+                type: 'pie',
+                data: {
+                    labels: ["Disponível", "Indisponível"],
+                    datasets: [{
+                        data: [100 * availability, 100 - (100 * availability)],
+                        backgroundColor: ["#949FB1", "#4D5360"],
+                        hoverBackgroundColor: ["#A8B3C5", "#616774"]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                var label = data.labels[tooltipItem.index] || '';
+
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += Math.round(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]) + '%';
+                                return label;
+                            }
+                        }
+                    },
+                    plugins: {
+                        datalabels: {
+                            color: "#fff",
+                            formatter: function (value, context) {
+                                return Math.round(value) + "%";
+                            }
+                        }
+                    }
+                }
+            });
+            var ctxPiePerform = document.getElementById("pieChartPerformance").getContext('2d');
+            var myPieChartPerformance = new Chart(ctxPiePerform, {
+                type: 'pie',
+                data: {
+                    labels: ["Produção real", ""],
+                    datasets: [{
+                        data: [(100 * performance), 100 - (100 * performance)],
+                        backgroundColor: ["#949FB1", "rgb(209,210,212)"],
+                        hoverBackgroundColor: ["#c5d0e3", "rgb(209,210,212)"],
+                        borderColor: ["#c5d0e3", "rgba(209,210,212,0)"]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    tooltips: {
+                        enabled: false
+                    },
+                    legend: {
+                        onClick: function (e) {
+                            e.stopPropagation();
+                        }
+                    },
+                    plugins: {
+                        datalabels: {
+                            anchor: 'center',
+                            offset: 6,
+                            align: 'top',
+                            formatter: function (value, context) {
+                                const ret = context.dataIndex == 1 ? '' : Math.round(value) + "%";
+                                return ret;
+                            }
+                        }
+                    }
+                }
+            });
+
+        }
+
+        function deleteRound() {
+            if (confirm('Você tem certeza que deseja apagar os dados da Rodada ' + this.roundToSet + "?")) {
+                if (this.roundToSet == 3) {
+                    localStorage.removeItem("costsPerItemRound3");
+                    localStorage.removeItem("performanceRound3");
+                    localStorage.removeItem("reasonCodesRound3");
+                    localStorage.removeItem("oeeRound3");
+                    localStorage.removeItem("round3Done");
+                    localStorage.removeItem("qualityRound3");
+                    localStorage.removeItem("availabilityRound3");
+                    window.location.replace("index.html");
+                }
+                if (this.roundToSet == 4) {
+                    localStorage.removeItem("costsPerItemRound4");
+                    localStorage.removeItem("performanceRound4");
+                    localStorage.removeItem("reasonCodesRound4");
+                    localStorage.removeItem("oeeRound4");
+                    localStorage.removeItem("round4Done");
+                    localStorage.removeItem("qualityRound4");
+                    localStorage.removeItem("availabilityRound4");
+                    window.location.replace("index.html");
+                }
+                if (this.roundToSet == 5) {
+                    localStorage.removeItem("costsPerItemRound5");
+                    localStorage.removeItem("performanceRound5");
+                    localStorage.removeItem("reasonCodesRound5");
+                    localStorage.removeItem("oeeRound5");
+                    localStorage.removeItem("round5Done");
+                    localStorage.removeItem("qualityRound5");
+                    localStorage.removeItem("availabilityRound5");
+                    window.location.replace("index.html");
+                }
+                if (this.roundToSet == 6) {
+                    localStorage.removeItem("costsPerItemRound6");
+                    localStorage.removeItem("performanceRound6");
+                    localStorage.removeItem("reasonCodesRound6");
+                    localStorage.removeItem("oeeRound6");
+                    localStorage.removeItem("round6Done");
+                    localStorage.removeItem("qualityRound6");
+                    localStorage.removeItem("availabilityRound6");
+                    window.location.replace("index.html");
+                }
+            } else {
+                // Do nothing!
+            }
+        }
+    </script>
+
+</body>
+
+</html>

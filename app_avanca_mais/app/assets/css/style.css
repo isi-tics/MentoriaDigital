@@ -1,0 +1,54 @@
+body, html {
+  background-image: url('../img/background.png');
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat;
+  font-family: 'Helvetica Neue', 'Calibri', Arial, sans-serif;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  overflow-y: scroll;
+}
+
+@media screen and (min-width: 1200px) {
+  body {
+    background-size: cover !important;
+    margin-left: 32% !important;
+    max-width: 30%;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+  html {
+    background: white;
+  }
+  #version {
+    position: relative !important;
+  }
+}
+
+#logo {
+  width: 80%;
+  text-align: center;
+}
+
+.div-logo {
+  padding-top: 40%;
+}
+
+.table-responsive-xs {
+  overflow-x: auto;
+}
+
+#version {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  font-weight: 600;
+}
+
+@media screen and (min-width: 568px) {
+  #version {
+    position: unset;
+  }
+}

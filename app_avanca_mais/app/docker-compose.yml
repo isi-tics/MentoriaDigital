@@ -1,0 +1,13 @@
+version: '3.5'
+services:
+  mina-game:
+    image: ${DOCKER_IMAGE}
+    container_name: ${CONTAINER_NAME}
+    expose:
+      - 8080
+    networks:
+      - qualitygate
+
+networks:
+  qualitygate:
+    external: true

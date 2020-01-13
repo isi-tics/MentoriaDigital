@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Avança +">
+  <meta name="author" content="ISITICs">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <title>Avança +</title>
+  <link rel="stylesheet" media="all" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/graph.style.css">
+  <link rel="stylesheet" href="assets/css/camera.style.css">
+  <link rel="stylesheet" media="all" href="assets/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div id="app" class="container-fluid">
+    <div class="row div-logo-interna">
+      <div class="col-12 text-center">
+        <a href="index.html">
+          <img id="logo-interna" src="assets/img/logo.png" class="img-fluid" alt="Logo">
+        </a>
+      </div>
+    </div>
+
+    <div class="row div-header-rodada">
+      <div class="col-12 text-center">
+        <h2>RODADA {{getRound()}}</h2>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 text-center">
+        <section class="cameras">
+          <h5 style="color:#fff">Câmeras</h5>
+          <ul>
+            <li v-if="cameras.length === 0" class="empty" style="color:#fff">Nenhuma Câmera Localizada</li>
+            <li v-for="camera in cameras" style="color:#fff">
+              <span v-if="camera.id == activeCameraId" :title="formatName(camera.name)"
+                class="active">{{ formatName(camera.name) }}</span>
+              <span v-if="camera.id != activeCameraId" :title="formatName(camera.name)">
+                <a @click.stop="selectCamera(camera)">{{ formatName(camera.name) }}</a>
+              </span>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 text-center">
+        <div id="background-camera">
+          <video id="preview"></video>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="table-responsive-xs">
+          <p class="information-mobile"></p>
+          <table class="table table-striped" style="color:#fff;text-align: center">
+            <thead style="border-top: unset">
+              <tr>
+                <th>Cartões lidos</th>
+                <th>Custo Total</th>
+                <th>Quantidade Produzida</th>
+                <th v-if="extraHours>0">Horas extras</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{totalCards}}</td>
+                <td>{{totalCS}}</td>
+                <td>{{totalQPFinalView}}</td>
+                <td v-if="extraHours>0">
+                  {{(extraHours/60)!=Math.round(extraHours/60)? (extraHours/60).toFixed(2) : extraHours/60}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="row" v-if="!isDisabled">
+      <div class="col-12">
+        <div class="table-responsive-xs">
+          <table class="table table-striped" style="color:#fff;text-align: center">
+            <thead style="border-top: unset">
+              <tr>
+                <th>OEE</th>
+                <th>Disponibilidade</th>
+                <th>Performance</th>
+                <th>Qualidade</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{oee}}</td>
+                <td>
+                  {{(availability*100)!=Math.round(availability*100)? (availability*100).toFixed(2):availability*100}}%
+                </td>
+                <td>{{performance*100!=Math.round(performance*100)? (performance*100).toFixed(2): performance*100}}%
+                </td>
+                <td>{{quality*100!=Math.round(quality*100)? (quality*100).toFixed(2): quality*100}}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!--<div class="row">NÃO REMOVER, SERVE PARA DEBUG
+      <div class="col-12">
+        {{dictCMPPre}}
+      </div>
+    </div>-->
+    <div class="row" v-if="!isDisabled">
+      <div>
+        <div class="table-responsive-xs">
+          <table id="occurenceStop" class="table table-striped" style="color:#fff;text-align: center">
+            <thead style="border-top: unset">
+              <tr>
+                <th>Motivo da Parada</th>
+                <th>Tempo Parado (min)</th>
+                <th>Incidências</th>
+                <th>Acumulada (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(value,item) in dictCMPPre">
+                <td>{{item}}</td>
+                <td>{{value.timeStopped}}</td>
+                <td>{{value.occurences}}</td>
+                <td>{{calculateAccumulate(value.timeStopped)}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!--<div class="row div-cartoes"> NÃO REMOVER, SERVE PARA DEBUG
+      <div class="col-12 text-center">
+        <section class="scans">
+          <ul v-if="scans.length === 0">
+            <li class="empty" style="color:#fff">Nenhum cartão escaneado</li>
+          </ul>
+          <transition-group name="scans" tag="ul">
+            <li v-for="(scan, index) in scans" :key="scan.date" :title="scan.content" style="color:#fff">
+              {{scan.content}}</li>
+          </transition-group>
+        </section>
+      </div>
+    </div>-->
+    <div v-bind:class="[{'row': totalCards > 0},{'deactivated': totalCards == 0 && totalCards != null}]">
+      <div class="col-12 text-center">
+        <br />
+        <h4>Gráficos</h4>
+        <br />
+        <canvas id="pieChartPerformance"></canvas>
+        <br />
+        <canvas id="pieChartAvailability"></canvas>
+        <br />
+        <canvas id="pieChart"></canvas>
+        <br />
+        <div class="wrapper" style="overflow-x: scroll; overflow-y: hidden; white-space: nowrap;">
+          <div style="height: 390px">
+            <canvas id="myChart" style="left: 0;right:0;pointer-events: none;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 text-center">
+        <a @click.prevent="concludeRound()" v-if="!isDisabled" class="btn btn-primary my-2" style="color:#fff">Finalizar
+          Rodada</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="assets/js/adapter.min.js"></script>
+  <script type="text/javascript" src="assets/js/vue.min.js"></script>
+  <script type="text/javascript" src="assets/js/instascan.min.js"></script>
+  <script type="text/javascript" src="assets/js/chart.min.js"></script>
+  <script type="text/javascript" src="assets/js/chartjs-plugin-datalabels.min.js"></script>
+  <script type="text/javascript" src="assets/js/app.js"></script>
+
+  <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+  <script type="text/javascript" src="assets/js/popper.min.js"></script>
+  <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+</body>
+
+</html>

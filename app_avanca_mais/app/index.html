@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Avança +">
+    <meta name="author" content="ISITICs">
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileImage" content="assets/img/icon_144.png">
+    <meta name="msapplication-TileColor" content="#31506F">
+    <meta name="theme-color" content="#4D5360" />
+    <link rel="shortcut icon" sizes="192x192" href="assets/img/icon_192.png">
+    <link rel="shortcut icon" sizes="128x128" href="assets/img/icon_128.png">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Avança +">
+    <link rel="apple-touch-icon" href="assets/img/icon_144.png">
+    <link rel="apple-touch-icon" href="touch-icon-iphone.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/img/icon_152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/img/icon_180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="assets/img/icon_167.png">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link href="assets/img/ios/ipad.png" sizes="3200x4267" rel="apple-touch-startup-image" />
+    <link href="assets/img/ios/ipadpro.png" sizes="3475x4633" rel="apple-touch-startup-image" />
+    <link href="assets/img/ios/ipadpro2.png" sizes="4267x5692" rel="apple-touch-startup-image" />
+    <link href="assets/img/ios/Iphone6Plus.png" sizes="2588x4600" rel="apple-touch-startup-image" />
+    <link href="assets/img/ios/Iphone7.png" sizes="1563x2779" rel="apple-touch-startup-image" />
+    <link href="assets/img/ios/IphoneSE-05.png" sizes="1333x2367" rel="apple-touch-startup-image" />
+    <link href="assets/img/ios/IphoneX-05.png" sizes="2344x5075" rel="apple-touch-startup-image" />
+
+    <link rel="icon" type="image/png" href="assets/img/icon_144.png">
+    <title>Avança +</title>
+    <link rel="stylesheet" type="text/css" media="all" href="assets/css/style.css">
+    <link rel="stylesheet" type="text/css" media="all" href="assets/css/bootstrap.min.css">
+    <style>
+        .div-rodadas {
+            padding-top: 20%;
+        }
+
+        .btn-rodadas {
+            color: #fff !important;
+            background-color: #31506F !important;
+            display: block;
+            text-align: center;
+        }
+
+        #snackbar {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+        }
+
+        #snackbar.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s;
+            animation: fadein 0.5s;
+        }
+
+        @-webkit-keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+    </style>
+    <style media="screen and (max-width: 360px)">
+        .btn.btn-rodadas.my-2 {
+            margin-left: -0.2rem;
+            text-align: center;
+            margin-right: -0.4rem;
+        }
+    </style>
+    <style media="screen and (min-width: 768px) and (max-width: 1024px)">
+        .btn.btn-rodadas.my-2 {
+            margin-left: 2rem;
+            text-align: center;
+            margin-right: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+
+        <div class="row div-logo">
+            <div class="col-12 text-center">
+                <img id="logo" src="assets/img/logo.png" class="img-fluid" alt="Logo">
+            </div>
+        </div>
+
+        <div class="row div-rodadas align-items-center" id="app">
+            <div class="col-12 text-center">
+                <h3>DEFINA A RODADA</h3>
+            </div>
+            <div class="col-2 mr-auto ml-auto">
+                <a href="round1.html" class="btn btn-rodadas my-2">1</a>
+            </div>
+            <div class="col-2 mr-auto ml-auto">
+                <a href="round2.html" class="btn btn-rodadas my-2">2</a>
+            </div>
+            <div class="col-2 mr-auto ml-auto">
+                <a v-on:click.prevent="setRound('3')" class="btn btn-rodadas my-2">3</a>
+            </div>
+            <div class="col-2 mr-auto ml-auto">
+                <a v-on:click.prevent="setRound('4')" class="btn btn-rodadas my-2">4</a>
+            </div>
+            <div class="col-2 mr-auto ml-auto">
+                <a v-on:click.prevent="setRound('5')" class="btn btn-rodadas my-2">5</a>
+            </div>
+            <div class="col-2 ml-auto mr-auto">
+                <a v-on:click.prevent="setRound('6')" class="btn btn-rodadas my-2">6</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div id="version" class="col-12 text-center">
+            Versão 1.4 | <a href="#" data-toggle="modal" data-target="#modal"> Informações </a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ModalLabel">Avança +</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5>O JOGO</h5>
+                    <p>O jogo representa um processo produtivo de injeção de plástico que opera em um turno de produção
+                        de 9 horas. Devem
+                        ser
+                        formados até 3 grupos de 4 a 6 jogadores.</p>
+                    <p>Cada casa do tabuleiro representa 30 minutos do turno de produção.</p>
+                    <p>Cada jogador deverá retirar, um por vez, uma carta da pilha da cor indicada pelo tabuleiro.</p>
+                    <p>Capacidade nominal 50 peças a cada 30 minutos.</p>
+                    <p>As Cartas Azuis indicarão ações “rotineiras” de uma linha de produção</p>
+                    <p>As Cartas Vermelhas “Deu Ruim” indicarão situações de desperdícios, paradas de produção,
+                        retrabalho/refugo na linha de
+                        produção.
+                    </p>
+                    <p>As cartas irão definir os dados: Descrição da situação, Período/Duração, Avanço das casas,
+                        Produção no período,
+                        Tempo parado programado no período, Tempo parado não programado no período, Peças com má
+                        qualidade,
+                        Custo da Produção.</p>
+                    <h5>OBJETIVO</h5>
+                    <p>Entregar a meta de produção do turno</p>
+                    <p>Calcular e aumentar a Eficiência Global do Equipamento - OEE</p>
+                    <p>Reduzir custos de produção por unidade</p>
+                    <h5>APP</h5>
+                    <p>A partir da terceira rodada, use a câmera do seu aparelho para ler o código de cada carta. Os
+                        cálculos são feitos
+                        automaticamente. Os dados podem ser vistos nas tabelas abaixo da tela de visualização da câmera.
+                    </p>
+                    <p>Clique no botão <b>Finalizar rodada</b> logo que tiver completado a rodada no tabuleiro.</p>
+                    <p>Em seguida aparecerá a tela de relatórios com gráficos e dados sobre a rodada finalizada.</p>
+                    <p>Caso queira, clique em <b>Enviar por E-mail</b>, e o aplicativo de e-mail do seu dispositivo irá
+                        colocar no corpo da
+                        mensagem os dados da rodada em formato de texto.</p>
+                    <p>Para apagar os dados da rodada caso precise jogar novamente, basta clicar no botão <b>Apagar
+                            Dados da Rodada</b></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="snackbar">Uma nova versão está disponível! Clique <a id="reload">AQUI</a> para atualizar.</div>
+
+    <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="assets/js/popper.min.js"></script>
+    <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/js/adapter.min.js"></script>
+    <script type="text/javascript" src="assets/js/vue.min.js"></script>
+    <script type="text/javascript" src="assets/js/app.js"></script>
+
+    <script>
+        let newWorker;
+        function showUpdateBar() {
+            let snackbar = document.getElementById('snackbar');
+            snackbar.className = 'show';
+        }
+        // The click event on the pop up notification
+        document.getElementById('reload').addEventListener('click', function () {
+            newWorker.postMessage({ action: 'skipWaiting' });
+        });
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js').then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        // Has network.state changed?
+                        switch (newWorker.state) {
+                            case 'installed':
+                                if (navigator.serviceWorker.controller) {
+                                    // new update available
+                                    showUpdateBar();
+                                }
+                                // No update available
+                                break;
+                        }
+                    });
+                });
+            });
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', function () {
+                if (refreshing) return;
+                window.location.reload();
+                refreshing = true;
+            });
+        }
+    </script>
+
+    <script>
+        //add banner add home to IOS
+        // Detects if device is on iOS 
+        const isIos = () => {
+            const userAgent = window.navigator.userAgent.toLowerCase();
+            return /iphone|ipad|ipod/.test(userAgent);
+        }
+        // Detects if device is in standalone mode
+        const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+        // Checks if should display install popup notification:
+        if (isIos() && !isInStandaloneMode()) {
+            // this.setState({ showInstallMessage: true });
+        }
+    </script>
+</body>
+
+</html>

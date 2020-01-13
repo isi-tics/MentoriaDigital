@@ -1,0 +1,14 @@
+@Library('jenkins_lib@master')
+import br.com.isi.Commands
+import br.com.isi.ProjectMetadata
+
+def cmd = new Commands();
+def projectMetadata = new ProjectMetadata();
+
+projectMetadata.projectName = "mina-game"
+projectMetadata.dockerfile = "Dockerfile"
+projectMetadata.language = "mina-simulator"
+projectMetadata.version = "1.0"
+projectMetadata.projectPath = "" 
+
+cmd.exec(projectMetadata);

@@ -1,0 +1,39 @@
+.div-header-rodada {
+    color: #fff !important;
+    background-color: #31506F !important;
+    width: 80%;
+    margin-top: 5%;
+    margin-left: 10% !important;
+}
+
+#logo-interna {
+    width: 50%;
+    text-align: center;
+}
+
+.div-logo-interna {
+    padding-top: 20%;
+}
+
+
+.information-mobile::after{
+    content: "\2190 Deslize as tabelas para mais informações →";
+}
+
+.information-mobile{
+    text-align: center;
+    color: black;
+    font-size: 14px;
+}
+
+@media screen and (min-width: 421px){
+    .wrapper div{
+        width: 95%;
+    }
+}
+
+@media screen and (max-width: 420px){
+    .wrapper div{
+        width: 500px;
+    }
+}
